@@ -1,0 +1,38 @@
+---
+title: "R Markdown and Leaflet"
+author: "Sukhovei Mikhail"
+date: "14 07 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(leaflet)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Sample gps-track from [kaggle competition](https://www.kaggle.com/c/google-smartphone-decimeter-challenge)
+
+```{r cars}
+gps <- read.csv("baseline_locations_train.csv")
+phone <- "2020-05-14-US-MTV-1_Pixel4"
+track <- gps[gps$phone == phone, c("latDeg", "lngDeg")]
+head(track)
+```
+
+Simplify gps-track with Ramer-Douglas-Peucker algorithm
+
+```{r}
+track.rdp <- RDP::RamerDouglasPeucker(track$latDeg, track$lngDeg, epsilon = 0.0001)
+names(track.rdp) <- c("lat", "lng")
+head(track.rdp)
+```
+
+Plot leaflet map
+
+```{r}
+track.rdp %>%
+    leaflet() %>%
+    addTiles() %>%
+    addMarkers() %>%
+    addPolylines(data = track.rdp, lat = ~lat, lng = ~lng)
+```
